@@ -80,47 +80,50 @@ def normalize_weights():
 def run_network():
     global input_intensity, previous_spike_count, t
     image = cv.imread('temp.png', cv.IMREAD_GRAYSCALE)
-    image = preprocess.main(image, (50, 50))
-    j = 0
-    while j < 1:
-        rate = image.reshape((n_input)) / 8. * input_intensity
-        input_groups['Xe'].rates = rate * Hz
-        net.run(single_example_time, report='text')
-        current_spike_count = np.asarray(spike_counters['Ae'].count[:]) - previous_spike_count
-        previous_spike_count = np.copy(spike_counters['Ae'].count[:])
-        if np.sum(current_spike_count) < 5:
-            input_intensity += 1
-            input_groups['Xe'].rates = 0 * Hz
-            net.run(resting_time)
-        else:
-            result_monitor = current_spike_count
-            input_groups['Xe'].rates = 0 * Hz
-            net.run(resting_time)
-            input_intensity = start_input_intensity
-            j += 1
+    if image is None:
+        txt.insert(tk.END, 'No image input\n')
+    else:
+        image = preprocess.main(image, (50, 50))
+        j = 0
+        while j < 1:
+            rate = image.reshape((n_input)) / 8. * input_intensity
+            input_groups['Xe'].rates = rate * Hz
+            net.run(single_example_time, report='text')
+            current_spike_count = np.asarray(spike_counters['Ae'].count[:]) - previous_spike_count
+            previous_spike_count = np.copy(spike_counters['Ae'].count[:])
+            if np.sum(current_spike_count) < 5:
+                input_intensity += 1
+                input_groups['Xe'].rates = 0 * Hz
+                net.run(resting_time)
+            else:
+                result_monitor = current_spike_count
+                input_groups['Xe'].rates = 0 * Hz
+                net.run(resting_time)
+                input_intensity = start_input_intensity
+                j += 1
 
-    while t < 1:
-        rate = image.reshape((n_input)) / 8. * input_intensity
-        input_groups['Xe'].rates = rate * Hz
-        net.run(single_example_time, report='text')
-        current_spike_count = np.asarray(spike_counters['Ae'].count[:]) - previous_spike_count
-        previous_spike_count = np.copy(spike_counters['Ae'].count[:])
-        if np.sum(current_spike_count) < 5:
-            input_intensity += 1
-            input_groups['Xe'].rates = 0 * Hz
-            net.run(resting_time)
-        else:
-            result_monitor = current_spike_count
-            input_groups['Xe'].rates = 0 * Hz
-            net.run(resting_time)
-            input_intensity = start_input_intensity
-            t += 1
+        while t < 1:
+            rate = image.reshape((n_input)) / 8. * input_intensity
+            input_groups['Xe'].rates = rate * Hz
+            net.run(single_example_time, report='text')
+            current_spike_count = np.asarray(spike_counters['Ae'].count[:]) - previous_spike_count
+            previous_spike_count = np.copy(spike_counters['Ae'].count[:])
+            if np.sum(current_spike_count) < 5:
+                input_intensity += 1
+                input_groups['Xe'].rates = 0 * Hz
+                net.run(resting_time)
+            else:
+                result_monitor = current_spike_count
+                input_groups['Xe'].rates = 0 * Hz
+                net.run(resting_time)
+                input_intensity = start_input_intensity
+                t += 1
 
-    character_print = np.array(['后: backward', '前: forward', '上: up', '下: down', '左: left', '右: right', '入: entrance', '出: exit'])
-    assignments = np.load("assignments.npy")
+        character_print = np.array(['后: backward', '前: forward', '上: up', '下: down', '左: left', '右: right', '入: entrance', '出: exit'])
+        assignments = np.load("assignments.npy")
 
-    test_results = recognize_number(assignments, result_monitor)
-    txt.insert(tk.END, character_print[int(test_results[0])]+'\n')
+        test_results = recognize_number(assignments, result_monitor)
+        txt.insert(tk.END, character_print[int(test_results[0])]+'\n')
 #------------------------------------------------------------------------------
 # define the functions in interface
 #------------------------------------------------------------------------------
@@ -484,5 +487,3 @@ try:
     root.mainloop()
 except:
     root.destroy()
-
-
